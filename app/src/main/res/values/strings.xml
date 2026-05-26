@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">HeyCyan Voice Agent</string>
+    <string name="voice_agent_title">HeyCyan Voice Agent</string>
+    <string name="voice_agent_subtitle">Stream glasses microphone PCM to your AI agent over WebSocket.</string>
+    <string name="websocket_url_hint">ws://host:port/voice</string>
+    <string name="action_scan">Scan</string>
+    <string name="action_reconnect">Reconnect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_start_voice">Start voice</string>
+    <string name="action_stop_voice">Stop voice</string>
+    <string name="log_initial">Ready.</string>
+    <string name="text_22">Connecting...</string>
+</resources>
