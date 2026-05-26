@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent.ui;
+package com.sphinx.voiceagent.ui;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;

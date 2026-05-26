@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent
+package com.sphinx.voiceagent
 
 import org.junit.Test
 

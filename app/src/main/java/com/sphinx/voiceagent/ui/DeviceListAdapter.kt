@@ -1,8 +1,8 @@
-package com.shinxjsc.voiceagent.ui
+package com.sphinx.voiceagent.ui
 import android.content.Context
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
-import com.shinxjsc.voiceagent.R
+import com.sphinx.voiceagent.R
 
 /**
  * @author hzy ,

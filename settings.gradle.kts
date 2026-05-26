@@ -29,5 +29,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "HeyCyanVoiceAgent"
+rootProject.name = "Glasses Assitant"
 include(":app")

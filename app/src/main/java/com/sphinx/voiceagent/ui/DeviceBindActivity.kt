@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent.ui
+package com.sphinx.voiceagent.ui
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
@@ -12,8 +12,8 @@ import com.oudmon.ble.base.bluetooth.BleOperateManager
 import com.oudmon.ble.base.scan.BleScannerHelper
 import com.oudmon.ble.base.scan.ScanRecord
 import com.oudmon.ble.base.scan.ScanWrapperCallback
-import com.shinxjsc.voiceagent.R
-import com.shinxjsc.voiceagent.databinding.ActivityDeviceBindBinding
+import com.sphinx.voiceagent.R
+import com.sphinx.voiceagent.databinding.ActivityDeviceBindBinding
 import com.xiasuhuei321.loadingdialog.view.LoadingDialog
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

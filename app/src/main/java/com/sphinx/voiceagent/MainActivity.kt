@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent
+package com.sphinx.voiceagent
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -19,26 +19,26 @@ import com.oudmon.ble.base.communication.bigData.resp.GlassesDeviceNotifyListene
 import com.oudmon.ble.base.communication.bigData.resp.GlassesDeviceNotifyRsp
 import com.oudmon.wifi.GlassesControl
 import com.oudmon.wifi.bean.GlassAlbumEntity
-import com.shinxjsc.voiceagent.databinding.AcitivytMainBinding
-import com.shinxjsc.voiceagent.ui.BluetoothUtils
-import com.shinxjsc.voiceagent.ui.DeviceBindActivity
-import com.shinxjsc.voiceagent.ui.MyApplication
-import com.shinxjsc.voiceagent.ui.hasBluetooth
-import com.shinxjsc.voiceagent.ui.requestBluetoothPermission
-import com.shinxjsc.voiceagent.ui.requestLocationPermission
-import com.shinxjsc.voiceagent.ui.startKtxActivity
-import com.shinxjsc.voiceagent.voice.VoiceAgentConfig
-import com.shinxjsc.voiceagent.voice.VoiceChatController
-import com.shinxjsc.voiceagent.voice.VoiceChatEvent
+import com.sphinx.voiceagent.ui.BluetoothUtils
+import com.sphinx.voiceagent.ui.DeviceBindActivity
+import com.sphinx.voiceagent.ui.MyApplication
+import com.sphinx.voiceagent.ui.hasBluetooth
+import com.sphinx.voiceagent.ui.requestBluetoothPermission
+import com.sphinx.voiceagent.ui.requestLocationPermission
+import com.sphinx.voiceagent.ui.startKtxActivity
+import com.sphinx.voiceagent.voice.VoiceAgentConfig
+import com.sphinx.voiceagent.voice.VoiceChatController
+import com.sphinx.voiceagent.voice.VoiceChatEvent
+import com.sphinx.voiceagent.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var binding: AcitivytMainBinding
+    private lateinit var binding: ActivityMainBinding
     private lateinit var voiceChatController: VoiceChatController
     private val deviceNotifyListener = DeviceNotifyListener()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = AcitivytMainBinding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         voiceChatController = VoiceChatController(::renderVoiceEvent)
@@ -95,9 +95,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun bindViews() {
-        binding.websocketUrl.setText(
-            getPreferences(MODE_PRIVATE).getString(PREF_WEBSOCKET_URL, DEFAULT_WEBSOCKET_URL)
-        )
+        binding.websocketUrl.setText(VoiceAgentConfig.DEFAULT_WEBSOCKET_URL)
 
         binding.btnScan.setOnClickListener {
             requestLocationPermission(this, object : PermissionCallback() {
@@ -118,10 +116,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnStartVoice.setOnClickListener {
-            val config = VoiceAgentConfig(websocketUrl = binding.websocketUrl.text.toString().trim())
-            getPreferences(MODE_PRIVATE).edit()
-                .putString(PREF_WEBSOCKET_URL, config.websocketUrl)
-                .apply()
+            val config = VoiceAgentConfig()
+            binding.websocketUrl.setText(config.websocketUrl)
+            Log.d("socketurl", config.websocketUrl)
             voiceChatController.start(config)
             setGlassesVoiceCapture(start = true)
         }
@@ -217,7 +214,5 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "HeyCyanVoiceAgent"
-        private const val PREF_WEBSOCKET_URL = "websocket_url"
-        private const val DEFAULT_WEBSOCKET_URL = "ws://10.0.2.2:8080/voice"
     }
 }

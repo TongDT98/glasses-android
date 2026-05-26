@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.shinxjsc.voiceagent"
+    namespace = "com.sphinx.voiceagent"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.yourcompany.heycianvoiceagent"
+        applicationId = "com.sphinx.heycianvoiceagent"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

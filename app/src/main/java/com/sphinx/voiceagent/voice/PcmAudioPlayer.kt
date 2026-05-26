@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent.voice
+package com.sphinx.voiceagent.voice
 
 import android.media.AudioAttributes
 import android.media.AudioFormat

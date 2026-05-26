@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent.ui
+package com.sphinx.voiceagent.ui
 import android.bluetooth.BluetoothDevice
 import android.util.Log
 import com.oudmon.ble.base.bluetooth.BleOperateManager

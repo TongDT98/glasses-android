@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent.voice
+package com.sphinx.voiceagent.voice
 
 sealed class VoiceChatEvent {
     data class Status(val message: String) : VoiceChatEvent()

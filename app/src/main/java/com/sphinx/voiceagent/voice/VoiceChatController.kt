@@ -1,8 +1,9 @@
-package com.shinxjsc.voiceagent.voice
+package com.sphinx.voiceagent.voice
 
 import android.os.Handler
 import android.os.Looper
 import org.json.JSONObject
+import android.util.Log
 
 class VoiceChatController(
     private val eventSink: (VoiceChatEvent) -> Unit,
@@ -50,6 +51,7 @@ class VoiceChatController(
     }
 
     override fun onText(message: String) {
+        Log.d("messagevoice",message)
         emit(VoiceChatEvent.AgentText(message))
     }
 

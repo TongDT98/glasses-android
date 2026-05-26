@@ -1,4 +1,4 @@
-package com.shinxjsc.voiceagent.ui
+package com.sphinx.voiceagent.ui
 
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
