@@ -1,5 +1,6 @@
 package com.sphinx.voiceagent.voice
 
+import android.util.Base64
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -40,15 +41,6 @@ class VoiceAgentWebSocketClient(
             object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     callback.onOpen()
-                    webSocket.send(
-                        JSONObject()
-                            .put("type", "session.start")
-                            .put("sampleRateHz", config.sampleRateHz)
-                            .put("channels", config.channels)
-                            .put("encoding", config.encoding)
-                            .put("locale", config.locale)
-                            .toString()
-                    )
                 }
 
                 override fun onMessage(webSocket: WebSocket, text: String) {
@@ -71,7 +63,13 @@ class VoiceAgentWebSocketClient(
     }
 
     fun sendAudio(pcmData: ByteArray): Boolean {
-        return webSocket?.send(ByteString.of(*pcmData)) == true
+        val base64Audio = Base64.encodeToString(pcmData, Base64.NO_WRAP)
+        val payload = JSONObject()
+            .put(
+                "audio_event",
+                JSONObject().put("audio_base_64", base64Audio)
+            )
+        return webSocket?.send(payload.toString()) == true
     }
 
     fun sendJson(type: String, payload: JSONObject = JSONObject()): Boolean {

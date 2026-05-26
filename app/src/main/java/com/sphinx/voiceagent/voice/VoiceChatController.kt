@@ -16,14 +16,13 @@ class VoiceChatController(
     fun start(config: VoiceAgentConfig) {
         if (active) stop()
         active = true
-        audioPlayer = PcmAudioPlayer(config.sampleRateHz).also { it.start() }
+        audioPlayer = PcmAudioPlayer(config.playbackSampleRateHz).also { it.start() }
         emit(VoiceChatEvent.Status("Connecting voice agent..."))
         webSocketClient.connect(config)
     }
 
     fun stop() {
         active = false
-        webSocketClient.sendJson("session.stop")
         webSocketClient.disconnect()
         audioPlayer.stop()
         emit(VoiceChatEvent.Status("Voice chat stopped"))
@@ -51,8 +50,25 @@ class VoiceChatController(
     }
 
     override fun onText(message: String) {
-        Log.d("messagevoice",message)
-        emit(VoiceChatEvent.AgentText(message))
+        Log.d("messagevoice", message)
+        try {
+            val json = JSONObject(message)
+            when (val type = json.optString("type")) {
+                "ready" -> emit(VoiceChatEvent.Status("Voice agent ready"))
+                "transcript" -> emit(VoiceChatEvent.Status("User: ${json.optString("text")}"))
+                "token" -> emit(VoiceChatEvent.AgentText(json.optString("text")))
+                "agent_start" -> emit(VoiceChatEvent.Status("Agent started"))
+                "agent_done" -> emit(VoiceChatEvent.Status("Agent done"))
+                "error" -> emit(VoiceChatEvent.Error(json.optString("message", "Server error")))
+                "end" -> {
+                    active = false
+                    emit(VoiceChatEvent.Status("Voice session ended: ${json.optString("reason", "unknown")}"))
+                }
+                else -> emit(VoiceChatEvent.AgentText(if (type.isBlank()) message else "Unknown event: $message"))
+            }
+        } catch (e: Exception) {
+            emit(VoiceChatEvent.AgentText(message))
+        }
     }
 
     override fun onAudio(pcmData: ByteArray) {
