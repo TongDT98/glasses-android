@@ -1,5 +1,6 @@
 package com.sphinx.voiceagent.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -29,6 +30,10 @@ public class BluetoothUtils {
                 return false;
             }
             // 蓝牙未打开
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
             return adapter.isEnabled();
         } catch (Exception e) {
             e.printStackTrace();

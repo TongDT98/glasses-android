@@ -88,6 +88,13 @@
                 android:text="@string/action_stop_voice" />
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btn_test_speaker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/action_test_speaker" />
+
         <TextView
             android:id="@+id/status_log"
             android:layout_width="match_parent"

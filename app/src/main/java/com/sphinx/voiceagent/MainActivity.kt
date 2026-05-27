@@ -4,8 +4,10 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -35,13 +37,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var voiceChatController: VoiceChatController
     private val deviceNotifyListener = DeviceNotifyListener()
+    private var microphoneCapturing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        voiceChatController = VoiceChatController(::renderVoiceEvent)
+        voiceChatController = VoiceChatController(this, ::renderVoiceEvent)
         initGlassesSdk()
         bindViews()
         requestRuntimePermissions()
@@ -54,6 +57,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         voiceChatController.stop()
+        voiceChatController.release()
         super.onDestroy()
     }
 
@@ -63,13 +67,15 @@ class MainActivity : AppCompatActivity() {
             ?.initGlasses(MyApplication.getInstance().getAlbumDirFile().absolutePath)
         LargeDataHandler.getInstance().addOutDeviceListener(100, deviceNotifyListener)
 
-        GlassesControl.getInstance(MyApplication.getInstance())
+            GlassesControl.getInstance(MyApplication.getInstance())
             ?.setWifiDownloadListener(object : GlassesControl.WifiFilesDownloadListener {
                 override fun voiceFromGlasses(pcmData: ByteArray) {
+                    Log.d(TAG, "voiceFromGlasses pcmBytes=${pcmData.size}")
                     voiceChatController.onGlassesPcm(pcmData)
                 }
 
                 override fun voiceFromGlassesStatus(status: Int) {
+                    Log.d(TAG, "voiceFromGlassesStatus=$status")
                     voiceChatController.onGlassesVoiceStatus(status)
                 }
 
@@ -90,7 +96,9 @@ class MainActivity : AppCompatActivity() {
                 override fun fileWasDownloadSuccessfully(entity: GlassAlbumEntity) = Unit
                 override fun onGlassesControlSuccess() = appendLog("Glasses control success")
                 override fun onGlassesFail(errorCode: Int) = appendLog("Glasses control failed: $errorCode")
-                override fun wifiSpeed(wifiSpeed: String) = Unit
+                override fun wifiSpeed(wifiSpeed: String) {
+                    appendLog("Glasses WiFi speed: $wifiSpeed")
+                }
             })
     }
 
@@ -98,6 +106,7 @@ class MainActivity : AppCompatActivity() {
         binding.websocketUrl.setText(VoiceAgentConfig.DEFAULT_WEBSOCKET_URL)
 
         binding.btnScan.setOnClickListener {
+            if (!ensureLocationEnabled()) return@setOnClickListener
             requestLocationPermission(this, object : PermissionCallback() {
                 override fun onGranted(permissions: MutableList<String>, all: Boolean) {
                     if (all) startKtxActivity<DeviceBindActivity>()
@@ -106,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnConnect.setOnClickListener {
+            if (!ensureLocationEnabled()) return@setOnClickListener
             BleOperateManager.getInstance().connectDirectly(DeviceManager.getInstance().deviceAddress)
             appendLog("Connecting to saved glasses address...")
         }
@@ -116,22 +126,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnStartVoice.setOnClickListener {
+            if (!ensureLocationEnabled()) return@setOnClickListener
             val config = VoiceAgentConfig()
             binding.websocketUrl.setText(config.websocketUrl)
             Log.d("socketurl", config.websocketUrl)
             voiceChatController.start(config)
-            setGlassesVoiceCapture(start = true)
         }
 
         binding.btnStopVoice.setOnClickListener {
             setGlassesVoiceCapture(start = false)
             voiceChatController.stop()
         }
+
+        binding.btnTestSpeaker.setOnClickListener {
+            voiceChatController.testSpeaker()
+        }
     }
 
     private fun requestRuntimePermissions() {
         val permissions = buildList {
             add(Permission.RECORD_AUDIO)
+            add(Permission.ACCESS_COARSE_LOCATION)
             add(Permission.ACCESS_FINE_LOCATION)
             add(Permission.BLUETOOTH_SCAN)
             add(Permission.BLUETOOTH_CONNECT)
@@ -140,6 +155,7 @@ class MainActivity : AppCompatActivity() {
                 add(Permission.READ_MEDIA_AUDIO)
                 add(Permission.READ_MEDIA_IMAGES)
                 add(Permission.READ_MEDIA_VIDEO)
+                add(Permission.NEARBY_WIFI_DEVICES)
             }
         }
 
@@ -149,6 +165,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun ensureBluetoothEnabled() {
+        ensureLocationEnabled()
         try {
             if (!BluetoothUtils.isEnabledBluetooth(this)) {
                 val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -169,18 +186,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun ensureLocationEnabled(): Boolean {
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        val enabled = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            locationManager.isLocationEnabled
+        } else {
+            @Suppress("DEPRECATION")
+            Settings.Secure.getInt(contentResolver, Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF) !=
+                Settings.Secure.LOCATION_MODE_OFF
+        }
+        if (!enabled) {
+            appendLog("Location is off. Turn on Location for Bluetooth glasses discovery/control.")
+            startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+        }
+        return enabled
+    }
+
     private fun setGlassesVoiceCapture(start: Boolean) {
+        if (microphoneCapturing == start) return
         val command = if (start) 0x08 else 0x0c
         LargeDataHandler.getInstance().glassesControl(byteArrayOf(0x02, 0x01, command.toByte())) { _, rsp ->
-            appendLog("Glasses voice capture ${if (start) "start" else "stop"} result=${rsp.errorCode}")
+            if (rsp.errorCode == 0) {
+                microphoneCapturing = start
+            }
+            appendLog(
+                "Glasses voice capture ${if (start) "start" else "stop"} " +
+                    "result=${rsp.errorCode} dataType=${rsp.dataType} workType=${rsp.workTypeIng}"
+            )
         }
     }
 
     private fun renderVoiceEvent(event: VoiceChatEvent) {
         when (event) {
+            VoiceChatEvent.Ready -> {
+                appendLog("Voice agent ready")
+                setGlassesVoiceCapture(start = true)
+            }
+            VoiceChatEvent.Disconnected -> setGlassesVoiceCapture(start = false)
             is VoiceChatEvent.Status -> appendLog(event.message)
             is VoiceChatEvent.AgentText -> appendLog("Agent: ${event.message}")
-            is VoiceChatEvent.Error -> appendLog("Error: ${event.message}")
+            is VoiceChatEvent.Error -> {
+                appendLog("Error: ${event.message}")
+                setGlassesVoiceCapture(start = false)
+            }
         }
     }
 

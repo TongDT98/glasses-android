@@ -8,6 +8,7 @@
     <string name="action_disconnect">Disconnect</string>
     <string name="action_start_voice">Start voice</string>
     <string name="action_stop_voice">Stop voice</string>
+    <string name="action_test_speaker">Test speaker</string>
     <string name="log_initial">Ready.</string>
     <string name="text_22">Connecting...</string>
 </resources>
