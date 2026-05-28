@@ -2,6 +2,8 @@ package com.sphinx.voiceagent.voice
 
 import android.util.Base64
 import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -22,8 +24,18 @@ class VoiceAgentWebSocketClient(
         fun onFailure(message: String, throwable: Throwable?)
     }
 
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val heartbeatRunnable = object : Runnable {
+        override fun run() {
+            if (!isConnected) return
+            webSocket?.send(JSONObject().put("type", "ping").toString())
+            Log.d(TAG, "Heartbeat ping sent")
+            mainHandler.postDelayed(this, HEARTBEAT_MS)
+        }
+    }
+
     private val httpClient = OkHttpClient.Builder()
-        .pingInterval(20, TimeUnit.SECONDS)
+        .pingInterval(0, TimeUnit.SECONDS)
         .retryOnConnectionFailure(true)
         .build()
 
@@ -46,6 +58,7 @@ class VoiceAgentWebSocketClient(
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     isConnected = true
                     Log.d(TAG, "WebSocket open code=${response.code} message=${response.message}")
+                    startHeartbeat()
                     callback.onOpen()
                 }
 
@@ -61,12 +74,14 @@ class VoiceAgentWebSocketClient(
 
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                     isConnected = false
+                    stopHeartbeat()
                     Log.d(TAG, "WebSocket closed code=$code reason=$reason")
                     callback.onClosed("closed $code $reason")
                 }
 
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     isConnected = false
+                    stopHeartbeat()
                     Log.e(TAG, "WebSocket failure code=${response?.code} message=${response?.message}", t)
                     callback.onFailure(
                         "code=${response?.code} message=${response?.message ?: t.message ?: "WebSocket failure"}",
@@ -101,12 +116,23 @@ class VoiceAgentWebSocketClient(
 
     fun disconnect(reason: String = "client disconnect") {
         isConnected = false
+        stopHeartbeat()
         Log.d(TAG, "Disconnect reason=$reason")
         webSocket?.close(1000, reason)
         webSocket = null
     }
 
+    private fun startHeartbeat() {
+        stopHeartbeat()
+        mainHandler.postDelayed(heartbeatRunnable, HEARTBEAT_MS)
+    }
+
+    private fun stopHeartbeat() {
+        mainHandler.removeCallbacks(heartbeatRunnable)
+    }
+
     companion object {
         private const val TAG = "VoiceAgentWebSocket"
+        private const val HEARTBEAT_MS = 10_000L
     }
 }

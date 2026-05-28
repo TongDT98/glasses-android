@@ -106,7 +106,7 @@ class VoiceResponsePlayer(
         eventSink(VoiceChatEvent.Status("Speaking fallback/test: $text result=$result"))
     }
 
-    fun stop() {
+    fun stop1() {
         audioTrack?.run {
             pause()
             flush()
@@ -114,6 +114,21 @@ class VoiceResponsePlayer(
         }
         audioTrack = null
         textToSpeech?.stop()
+    }
+    fun stop() {
+        audioTrack?.run {
+            try {
+                if (playState == AudioTrack.PLAYSTATE_PLAYING) {
+                    stop() // Dừng phát ngay lập tức thay vì pause
+                }
+                flush() // Xóa sạch dữ liệu PCM cũ còn kẹt trong buffer phần cứng
+                release()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error stopping AudioTrack", e)
+            }
+        }
+        audioTrack = null
+        textToSpeech?.stop() // Ngắt luôn cả giọng đọc TTS cục bộ nếu đang phát dở
     }
 
     fun release() {
@@ -131,7 +146,7 @@ class VoiceResponsePlayer(
             .build()
     }
 
-    private fun findBluetoothOutputDevice(): AudioDeviceInfo? {
+    private fun findBluetoothOutputDevice1(): AudioDeviceInfo? {
         return audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
             .firstOrNull { device ->
                 device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
@@ -140,7 +155,7 @@ class VoiceResponsePlayer(
                         device.type == AudioDeviceInfo.TYPE_BLE_HEADSET)
             }
     }
-    private fun findBluetoothOutputDevice1(): AudioDeviceInfo? {
+    private fun findBluetoothOutputDevice(): AudioDeviceInfo? {
         val outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
         // Ưu tiên BLE Headset trước (kính BLE audio, Android 12+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

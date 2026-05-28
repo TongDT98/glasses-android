@@ -253,6 +253,7 @@ class MainActivity : AppCompatActivity() {
             when (response.loadData[6].toInt()) {
                 0x03 -> if (response.loadData[7].toInt() == 1) {
                     appendLog("Glasses microphone activated")
+                    Log.d("COnnectMicrophone","Glasses microphone activated")
                 }
                 0x05 -> appendLog("Battery: ${response.loadData[7].toInt()}%")
                 0x0c -> appendLog("Glasses pause/broadcast event")
