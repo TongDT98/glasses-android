@@ -27,11 +27,13 @@ class VoiceChatController(
     private var pcmFlushRunnable: Runnable? = null
     private val agentTextBuffer = StringBuilder()
     private var receivedAgentAudio = false
+    private var currentConfig: VoiceAgentConfig? = null
     private val chunkBuffer = java.io.ByteArrayOutputStream()
     private val BUFFER_SIZE_THRESHOLD = 6400
 
     fun start(config: VoiceAgentConfig) {
         if (active) stop()
+        currentConfig = config
         active = true
         glassesSpeaking = false
         pcmFrameCount = 0
@@ -71,37 +73,12 @@ class VoiceChatController(
         cancelTokenSpeak()
         cancelPcmFlush()
         webSocketClient.disconnect()
+        currentConfig = null
         //synchronized(chunkBuffer) { chunkBuffer.reset() }
         responsePlayer.stop()
         emit(VoiceChatEvent.Status("Voice chat stopped"))
     }
 
-    /*fun onGlassesPcmcodex(pcmData: ByteArray) {
-        Log.d(TAG, "PCM callback bytes=${pcmData.size} active=$active speaking=$glassesSpeaking")
-        if (!active) {
-            emit(VoiceChatEvent.Status("PCM skipped: voice chat inactive, bytes=${pcmData.size}"))
-            return
-        }
-        if (!agentReady) {
-            emit(VoiceChatEvent.Status("PCM skipped: agent is not ready, bytes=${pcmData.size}"))
-            return
-        }
-        if (pcmData.isEmpty()) {
-            emit(VoiceChatEvent.Status("PCM skipped: empty frame"))
-            return
-        }
-        if (!glassesSpeaking) {
-            glassesSpeaking = true
-            emit(VoiceChatEvent.Status("Glasses PCM started without status event"))
-        }
-        pcmFrameCount++
-        pcmByteCount += pcmData.size
-        speechChunks.add(pcmData.copyOf())
-        if (pcmFrameCount == 1 || pcmFrameCount % 20 == 0) {
-            emit(VoiceChatEvent.Status("PCM buffered frames=$pcmFrameCount bytes=$pcmByteCount last=${pcmData.size}"))
-        }
-        chedulePcmFlush()
-    }*/
     fun onGlassesPcm(pcmData: ByteArray) {
         if (!active) return
         if (pcmData.isEmpty()) return
@@ -146,23 +123,7 @@ class VoiceChatController(
             Log.e(TAG, "Failed to stream audio chunk to websocket")
         }
     }*/
-    fun onGlassesVoiceStatusold(status: Int) {
-        when (status) {
-            1 -> {
-                glassesSpeaking = true
-                pcmFrameCount = 0
-                pcmByteCount = 0L
-                speechChunks.clear()
-                emit(VoiceChatEvent.Status("Glasses speaking started"))
-            }
-            2 -> {
-                glassesSpeaking = false
-                sendBufferedUtterance("status_end")
-                emit(VoiceChatEvent.Status("Glasses speaking ended frames=$pcmFrameCount bytes=$pcmByteCount"))
-            }
-            else -> emit(VoiceChatEvent.Status("Glasses voice status: $status"))
-        }
-    }
+
     fun onGlassesVoiceStatus(status: Int) {
         when (status) {
             1 -> { // Người dùng gọi "Hey Cyan" và bắt đầu nói câu mới
@@ -270,6 +231,13 @@ class VoiceChatController(
                 "error" -> emit(VoiceChatEvent.Error(json.optString("message", "Server error")))
 
                 "end" -> {
+                    val reason = json.optString("reason", "unknown")
+                    /*if (reason == "idle_timeout" && reconnectAgent("idle_timeout")) {
+                        return
+                    }*/
+                    if (reason == "idle_timeout") {
+                        emit(VoiceChatEvent.Status("Server sent idle_timeout, keeping player active until finished"))
+                    }
                     active = false
                     glassesSpeaking = false
                     speechChunks.clear()
@@ -281,9 +249,12 @@ class VoiceChatController(
                     cancelPcmFlush()
 
                     // Giải phóng trình phát khi session kết thúc hoàn toàn
-                    responsePlayer.stop()
+                   // responsePlayer.stop()
+                    if (reason != "idle_timeout") {
+                        responsePlayer.stop()
+                    }
 
-                    emit(VoiceChatEvent.Status("Voice session ended: ${json.optString("reason", "unknown")}"))
+                    emit(VoiceChatEvent.Status("Voice session ended: $reason"))
                     emit(VoiceChatEvent.Disconnected)
                 }
                 else -> emit(VoiceChatEvent.AgentText(if (type.isBlank()) message else "Unknown event: $message"))
@@ -302,6 +273,7 @@ class VoiceChatController(
     }
 
     override fun onClosed(reason: String) {
+        //if (active && reconnectAgent(reason)) return
         active = false
         glassesSpeaking = false
         speechChunks.clear()
@@ -318,6 +290,7 @@ class VoiceChatController(
     }
 
     override fun onFailure(message: String, throwable: Throwable?) {
+        //if (active && reconnectAgent(message)) return
         active = false
         glassesSpeaking = false
         speechChunks.clear()
@@ -420,6 +393,25 @@ class VoiceChatController(
     private fun cancelReadyTimeout() {
         readyTimeoutRunnable?.let { mainHandler.removeCallbacks(it) }
         readyTimeoutRunnable = null
+    }
+
+    private fun reconnectAgent(reason: String): Boolean {
+        val config = currentConfig ?: return false
+        emit(VoiceChatEvent.Status("Reconnecting voice agent after: $reason"))
+        glassesSpeaking = false
+        speechChunks.clear()
+        synchronized(chunkBuffer) { chunkBuffer.reset() }
+        awaitingAgentResponse = false
+        agentReady = false
+        receivedAgentAudio = false
+        agentTextBuffer.clear()
+        cancelFallback()
+        cancelReadyTimeout()
+        cancelTokenSpeak()
+        cancelPcmFlush()
+        webSocketClient.connect(config)
+        scheduleReadyTimeout()
+        return true
     }
 
     private fun drainSpeechAudio(): ByteArray {

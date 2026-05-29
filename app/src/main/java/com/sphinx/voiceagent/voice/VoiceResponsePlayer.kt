@@ -105,16 +105,6 @@ class VoiceResponsePlayer(
         val result = tts.speak(text, TextToSpeech.QUEUE_ADD, params, "voice_response_test")
         eventSink(VoiceChatEvent.Status("Speaking fallback/test: $text result=$result"))
     }
-
-    fun stop1() {
-        audioTrack?.run {
-            pause()
-            flush()
-            release()
-        }
-        audioTrack = null
-        textToSpeech?.stop()
-    }
     fun stop() {
         audioTrack?.run {
             try {
