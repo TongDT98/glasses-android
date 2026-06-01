@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider paths — cho phép chia sẻ file ra ngoài app an toàn
+    Thư mục DCIM_1 nằm trong getExternalFilesDir("") = external-files-path
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- /storage/emulated/0/Android/data/<pkg>/files/ -->
+    <external-files-path
+        name="glasses_media"
+        path="." />
+
+    <!-- Fallback: internal cache -->
+    <cache-path
+        name="glasses_cache"
+        path="." />
+</paths>

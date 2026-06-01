@@ -12,6 +12,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- ── HEADER ─────────────────────────────────────────────── -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -36,10 +37,28 @@
             android:inputType="textUri"
             android:singleLine="true" />
 
+        <!-- ── BLUETOOTH CONTROLS ─────────────────────────────────── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/section_bluetooth"
+            android:textColor="#333333"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="10dp"
+            android:background="#E0E0E0" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="horizontal">
 
             <Button
@@ -66,10 +85,28 @@
                 android:text="@string/action_disconnect" />
         </LinearLayout>
 
+        <!-- ── VOICE AGENT CONTROLS ───────────────────────────────── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/section_voice_agent"
+            android:textColor="#333333"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="10dp"
+            android:background="#E0E0E0" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
             android:orientation="horizontal">
 
             <Button
@@ -88,13 +125,215 @@
                 android:text="@string/action_stop_voice" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btn_test_speaker"
+
+
+        <!-- ═══════════════════════════════════════════════════════════
+             MEDIA CONTROLS  (Camera + Audio recording + Sync)
+             ═══════════════════════════════════════════════════════════ -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/action_test_speaker" />
+            android:layout_marginTop="24dp"
+            android:text="@string/section_media"
+            android:textColor="#333333"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="10dp"
+            android:background="#E0E0E0" />
+
+        <!-- Row 1: Photo · Video · Audio -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- TAKE PHOTO -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_take_photo"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:backgroundTint="#1976D2"
+                    android:text="@string/icon_camera"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:padding="0dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/action_take_photo"
+                    android:textSize="12sp"
+                    android:textColor="#444444"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- VIDEO RECORD toggle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_toggle_video"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:backgroundTint="#D32F2F"
+                    android:text="@string/icon_video"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:padding="0dp" />
+
+                <TextView
+                    android:id="@+id/tv_video_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/action_start_video"
+                    android:textSize="12sp"
+                    android:textColor="#444444"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <!-- AUDIO RECORD toggle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btn_toggle_audio"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:backgroundTint="#388E3C"
+                    android:text="@string/icon_mic"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:padding="0dp" />
+
+                <TextView
+                    android:id="@+id/tv_audio_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/action_start_audio"
+                    android:textSize="12sp"
+                    android:textColor="#444444"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Row 2: Unsynced badge + Sync button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Unsynced count chip -->
+            <TextView
+                android:id="@+id/tv_unsynced_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_chip"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="@string/unsynced_none"
+                android:textSize="13sp"
+                android:textColor="#333333" />
+
+            <!-- CHECK button -->
+            <Button
+                android:id="@+id/btn_check_media"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#607D8B"
+                android:text="@string/action_check_media"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+            <!-- SYNC button -->
+            <Button
+                android:id="@+id/btn_sync_media"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#F57C00"
+                android:text="@string/action_sync_media"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+        <Button
+            android:id="@+id/btn_open_gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#5C6BC0"
+            android:text="📂 File phương tiện"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp" />
+
+
+        </LinearLayout>
+
+        <!-- Sync progress bar (hidden until sync starts) -->
+        <LinearLayout
+            android:id="@+id/layout_sync_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_sync_progress_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sync_in_progress"
+                android:textSize="12sp"
+                android:textColor="#555555" />
+
+            <ProgressBar
+                android:id="@+id/progress_sync"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:max="100"
+                android:progress="0" />
+        </LinearLayout>
+
+        <!-- ── STATUS LOG ─────────────────────────────────────────── -->
         <TextView
             android:id="@+id/status_log"
             android:layout_width="match_parent"
@@ -108,5 +347,6 @@
             android:text="@string/log_initial"
             android:textColor="#EAEAEA"
             android:textSize="12sp" />
+
     </LinearLayout>
 </ScrollView>

@@ -53,6 +53,29 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.DeviceBindActivity" />
+ <!-- ── Media Gallery ───────────────────────────────────── -->
+        <activity
+            android:name=".media.MediaGalleryActivity"
+            android:label="Media từ kính"
+            android:parentActivityName=".MainActivity" />
+ 
+        <!-- ── FileProvider — bắt buộc để mở / chia sẻ file ────── -->
+        <!--
+            Cho phép app chia sẻ file trong getExternalFilesDir ra ngoài
+            (viewer ảnh, video player, audio player, v.v.)
+            Không có FileProvider → Intent.ACTION_VIEW crash với
+            "exposed beyond app through Intent.getData()"
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+ 
 
     </application>
 

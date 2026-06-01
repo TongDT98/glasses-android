@@ -1,14 +1,49 @@
 <resources>
+    <!-- App -->
     <string name="app_name">HeyCyan Voice Agent</string>
     <string name="voice_agent_title">HeyCyan Voice Agent</string>
     <string name="voice_agent_subtitle">Stream glasses microphone PCM to your AI agent over WebSocket.</string>
-    <string name="websocket_url_hint">wss://api-agent.svisor.vn/ws/voice-call/...</string>
+    <string name="websocket_url_hint">wss://api-agent.svisor.vn/ws/voice-call/…</string>
+
+    <!-- Section headers -->
+    <string name="section_bluetooth">Bluetooth</string>
+    <string name="section_voice_agent">Voice Agent</string>
+    <string name="section_media">Media Controls</string>
+
+    <!-- Bluetooth actions -->
     <string name="action_scan">Scan</string>
     <string name="action_reconnect">Reconnect</string>
     <string name="action_disconnect">Disconnect</string>
-    <string name="action_start_voice">Start voice</string>
-    <string name="action_stop_voice">Stop voice</string>
-    <string name="action_test_speaker">Test speaker</string>
+
+    <!-- Voice actions -->
+    <string name="action_start_voice">Start Voice</string>
+    <string name="action_stop_voice">Stop Voice</string>
+    <string name="action_test_speaker">Test Speaker</string>
+
+    <!-- ── Media actions ───────────────────────────────────────── -->
+    <!-- Button icons (emoji used as text label on circular buttons) -->
+    <string name="icon_camera">📷</string>
+    <string name="icon_video">🎥</string>
+    <string name="icon_mic">🎙</string>
+
+    <!-- Photo -->
+    <string name="action_take_photo">Chụp ảnh</string>
+
+    <!-- Video toggle labels -->
+    <string name="action_start_video">Quay video</string>
+    <string name="action_stop_video">Dừng video</string>
+
+    <!-- Audio toggle labels -->
+    <string name="action_start_audio">Ghi âm</string>
+    <string name="action_stop_audio">Dừng ghi âm</string>
+
+    <!-- Sync -->
+    <string name="action_check_media">Kiểm tra</string>
+    <string name="action_sync_media">Đồng bộ</string>
+    <string name="sync_in_progress">Đang đồng bộ…</string>
+    <string name="unsynced_none">Không có file chờ đồng bộ</string>
+
+    <!-- Misc -->
     <string name="log_initial">Ready.</string>
-    <string name="text_22">Connecting...</string>
+    <string name="text_22">Connecting…</string>
 </resources>
