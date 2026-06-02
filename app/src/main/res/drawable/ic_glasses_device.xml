@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SVG-style vector drawable — chiếc kính thông minh nhìn từ trên xuống
+  Thiết kế: gọng kính bo tròn + 2 tròng kính + cầu nối giữa + 2 gọng bên
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="60dp"
+    android:viewportWidth="120"
+    android:viewportHeight="60">
+
+    <!-- Gọng trái -->
+    <path
+        android:pathData="M2,30 Q2,8 20,8 L46,8 Q52,8 54,14 L54,46 Q52,52 46,52 L20,52 Q2,52 2,30 Z"
+        android:fillColor="#1A1A2E"
+        android:strokeColor="#4A9EFF"
+        android:strokeWidth="1.5" />
+
+    <!-- Tròng kính trái - highlight -->
+    <path
+        android:pathData="M6,30 Q6,12 20,12 L46,12 Q50,12 50,16 L50,44 Q50,48 46,48 L20,48 Q6,48 6,30 Z"
+        android:fillColor="#0D1B3E"
+        android:strokeColor="#2A6DB5"
+        android:strokeWidth="0.8" />
+
+    <!-- Reflection trái -->
+    <path
+        android:pathData="M10,16 Q14,12 20,13 L30,13 Q22,18 14,22 Z"
+        android:fillColor="#4A9EFF"
+        android:fillAlpha="0.25" />
+
+    <!-- Cầu nối giữa -->
+    <path
+        android:pathData="M54,26 Q60,22 66,26 L66,34 Q60,38 54,34 Z"
+        android:fillColor="#1A1A2E"
+        android:strokeColor="#4A9EFF"
+        android:strokeWidth="1" />
+
+    <!-- Gọng phải -->
+    <path
+        android:pathData="M118,30 Q118,8 100,8 L74,8 Q68,8 66,14 L66,46 Q68,52 74,52 L100,52 Q118,52 118,30 Z"
+        android:fillColor="#1A1A2E"
+        android:strokeColor="#4A9EFF"
+        android:strokeWidth="1.5" />
+
+    <!-- Tròng kính phải - highlight -->
+    <path
+        android:pathData="M114,30 Q114,12 100,12 L74,12 Q70,12 70,16 L70,44 Q70,48 74,48 L100,48 Q114,48 114,30 Z"
+        android:fillColor="#0D1B3E"
+        android:strokeColor="#2A6DB5"
+        android:strokeWidth="0.8" />
+
+    <!-- Reflection phải -->
+    <path
+        android:pathData="M110,16 Q106,12 100,13 L90,13 Q98,18 106,22 Z"
+        android:fillColor="#4A9EFF"
+        android:fillAlpha="0.25" />
+
+    <!-- Camera dot phải -->
+    <path
+        android:pathData="M104,20 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"
+        android:fillColor="#4A9EFF"
+        android:fillAlpha="0.9" />
+    <path
+        android:pathData="M104,20 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"
+        android:fillColor="#001133" />
+
+    <!-- LED indicator trái -->
+    <path
+        android:pathData="M16,40 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0"
+        android:fillColor="#00FF88"
+        android:fillAlpha="0.85" />
+
+</vector>

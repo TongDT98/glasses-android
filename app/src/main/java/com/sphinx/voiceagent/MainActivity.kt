@@ -1,6 +1,4 @@
 package com.sphinx.voiceagent
-
-
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
@@ -13,6 +11,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.hjq.permissions.OnPermissionCallback
@@ -84,6 +83,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         ensureBluetoothEnabled()
+        refreshDeviceCard()
     }
 
     override fun onDestroy() {
@@ -91,84 +91,6 @@ class MainActivity : AppCompatActivity() {
         voiceChatController.release()
         super.onDestroy()
     }
-
-   /* private fun initGlassesSdk() {
-        MyApplication.getInstance().createDirs(MyApplication.getInstance().getAlbumDirFile().absolutePath)
-        GlassesControl.getInstance(MyApplication.getInstance())
-            ?.initGlasses(MyApplication.getInstance().getAlbumDirFile().absolutePath)
-        // media
-        val app = MyApplication.getInstance()
-        // SyncManager đăng ký WifiFilesDownloadListener — xử lý cả voice PCM + file sync
-        syncManager.initWifiSyncService(app.getAlbumDirFile())
-
-        // Wire SyncManager UI callbacks
-        syncManager.onFileProgress = { fileName, progress ->
-            runOnUiThread {
-                binding.layoutSyncProgress.visibility = View.VISIBLE
-                binding.progressSync.progress = progress
-                binding.tvSyncProgressLabel.text =
-                    "Đang tải: $fileName ($progress%)"
-            }
-        }
-        syncManager.onFileSuccess = { entity: GlassAlbumEntity ->
-            runOnUiThread {
-                appendLog("✅ Đã tải: ${entity.fileName}")
-            }
-        }
-        syncManager.onSyncComplete = {
-            runOnUiThread {
-                binding.layoutSyncProgress.visibility = View.GONE
-                appendLog("🎉 Đồng bộ hoàn tất!")
-                // Làm mới số đếm sau khi sync xong
-                checkUnsyncedMedia()
-            }
-        }
-        syncManager.onSyncError = { fileType, errorType ->
-            runOnUiThread {
-                appendLog("❌ Lỗi đồng bộ file (loại=$fileType, mã=$errorType)")
-            }
-        }
-        syncManager.onWifiSpeed = { speed ->
-            runOnUiThread { appendLog("Wi-Fi: $speed") }
-        }
-
-        //endmedia
-        LargeDataHandler.getInstance().addOutDeviceListener(100, deviceNotifyListener)
-
-            GlassesControl.getInstance(MyApplication.getInstance())
-            ?.setWifiDownloadListener(object : GlassesControl.WifiFilesDownloadListener {
-                override fun voiceFromGlasses(pcmData: ByteArray) {
-                    Log.d(TAG, "voiceFromGlasses pcmBytes=${pcmData.size}")
-                    voiceChatController.onGlassesPcm(pcmData)
-                }
-
-                override fun voiceFromGlassesStatus(status: Int) {
-                    Log.d(TAG, "voiceFromGlassesStatus=$status")
-                    voiceChatController.onGlassesVoiceStatus(status)
-                }
-
-                override fun recordingToPcm(fileName: String, filePath: String, duration: Int) {
-                    appendLog("Recording converted: $fileName duration=${duration}ms")
-                }
-
-                override fun recordingToPcmError(fileName: String, errorInfo: String) {
-                    appendLog("Recording convert error: $fileName $errorInfo")
-                }
-
-                override fun eisEnd(fileName: String, filePath: String) = Unit
-                override fun eisError(fileName: String, sourcePath: String, errorInfo: String) = Unit
-                override fun fileCount(index: Int, total: Int) = Unit
-                override fun fileDownloadComplete() = Unit
-                override fun fileDownloadError(fileType: Int, errorType: Int) = Unit
-                override fun fileProgress(fileName: String, progress: Int) = Unit
-                override fun fileWasDownloadSuccessfully(entity: GlassAlbumEntity) = Unit
-                override fun onGlassesControlSuccess() = appendLog("Glasses control success")
-                override fun onGlassesFail(errorCode: Int) = appendLog("Glasses control failed: $errorCode")
-                override fun wifiSpeed(wifiSpeed: String) {
-                    appendLog("Glasses WiFi speed: $wifiSpeed")
-                }
-            })
-    }*/
    private fun initGlassesSdk() {
        val app = MyApplication.getInstance()
        app.createDirs(app.getAlbumDirFile().absolutePath)
@@ -237,96 +159,6 @@ class MainActivity : AppCompatActivity() {
        // BLE notify listener
        LargeDataHandler.getInstance().addOutDeviceListener(100, deviceNotifyListener)
    }
-
-
-    /*private fun bindViews() {
-        binding.websocketUrl.setText(VoiceAgentConfig.DEFAULT_WEBSOCKET_URL)
-
-        binding.btnScan.setOnClickListener {
-            if (!ensureLocationEnabled()) return@setOnClickListener
-            requestLocationPermission(this, object : PermissionCallback() {
-                override fun onGranted(permissions: MutableList<String>, all: Boolean) {
-                    if (all) startKtxActivity<DeviceBindActivity>()
-                }
-            })
-        }
-
-        binding.btnConnect.setOnClickListener {
-            if (!ensureLocationEnabled()) return@setOnClickListener
-            BleOperateManager.getInstance().connectDirectly(DeviceManager.getInstance().deviceAddress)
-            appendLog("Connecting to saved glasses address...")
-        }
-
-        binding.btnDisconnect.setOnClickListener {
-            BleOperateManager.getInstance().unBindDevice()
-            appendLog("Glasses disconnected")
-        }
-
-        binding.btnStartVoice.setOnClickListener {
-            if (!ensureLocationEnabled()) return@setOnClickListener
-            val config = VoiceAgentConfig()
-            binding.websocketUrl.setText(config.websocketUrl)
-            Log.d("socketurl", config.websocketUrl)
-            voiceChatController.start(config)
-        }
-
-        binding.btnStopVoice.setOnClickListener {
-            setGlassesVoiceCapture(start = false)
-            voiceChatController.stop()
-        }
-
-        // ── Media Controls ─────────────────────────────────────────
-
-        // 📷 Chụp ảnh — người dùng nhấn nút hoặc nhấn camera button trên kính
-        binding.btnTakePhoto.setOnClickListener {
-            appendLog("📷 Đang ra lệnh chụp ảnh…")
-            mediaManager.takePhoto(object : MediaManager.MediaResultCallback {
-                override fun onSuccess(message: String) = runOnUiThread { appendLog(message) }
-                override fun onError(errorCode: Int, message: String) =
-                    runOnUiThread { appendLog("❌ $message (code=$errorCode)") }
-            })
-        }
-
-        // 🎥 Bật/tắt quay video
-        binding.btnToggleVideo.setOnClickListener {
-            val starting = !mediaManager.isRecordingVideo
-            appendLog(if (starting) "🎥 Đang ra lệnh quay video…" else "⏹ Đang dừng quay video…")
-            mediaManager.toggleVideoRecording(object : MediaManager.MediaResultCallback {
-                override fun onSuccess(message: String) = runOnUiThread {
-                    appendLog(message)
-                    updateVideoButton()
-                }
-                override fun onError(errorCode: Int, message: String) =
-                    runOnUiThread { appendLog("❌ $message (code=$errorCode)") }
-            })
-        }
-
-        // 🎙 Bật/tắt ghi âm
-        binding.btnToggleAudio.setOnClickListener {
-            val starting = !mediaManager.isRecordingAudio
-            appendLog(if (starting) "🎙 Đang ra lệnh ghi âm…" else "⏹ Đang dừng ghi âm…")
-            mediaManager.toggleAudioRecording(object : MediaManager.MediaResultCallback {
-                override fun onSuccess(message: String) = runOnUiThread {
-                    appendLog(message)
-                    updateAudioButton()
-                }
-                override fun onError(errorCode: Int, message: String) =
-                    runOnUiThread { appendLog("❌ $message (code=$errorCode)") }
-            })
-        }
-
-        // 🔍 Kiểm tra số file chưa đồng bộ
-        binding.btnCheckMedia.setOnClickListener { checkUnsyncedMedia() }
-
-        // 🔄 Đồng bộ media từ kính về điện thoại
-        binding.btnSyncMedia.setOnClickListener {
-            appendLog("🔄 Bắt đầu đồng bộ media từ kính…")
-            binding.layoutSyncProgress.visibility = View.VISIBLE
-            binding.progressSync.progress = 0
-            syncManager.startSyncMedia()
-        }
-
-    }*/
     private fun bindViews() {
         binding.websocketUrl.setText(VoiceAgentConfig.DEFAULT_WEBSOCKET_URL)
 
@@ -342,12 +174,15 @@ class MainActivity : AppCompatActivity() {
         binding.btnConnect.setOnClickListener {
             if (!ensureLocationEnabled()) return@setOnClickListener
             BleOperateManager.getInstance().connectDirectly(DeviceManager.getInstance().deviceAddress)
-            appendLog("Connecting to saved glasses address...")
+            updateConnectionStatus(connecting = true)
+            appendLog("Đang kết nối lại kính…")
         }
 
         binding.btnDisconnect.setOnClickListener {
             BleOperateManager.getInstance().unBindDevice()
             appendLog("Glasses disconnected")
+            updateConnectionStatus(connected = false)
+            appendLog("Đã ngắt kết nối kính")
         }
 
         binding.btnStartVoice.setOnClickListener {
@@ -454,6 +289,86 @@ class MainActivity : AppCompatActivity() {
             }
         }, 5_000L)
     }
+    private fun refreshDeviceCard() {
+        val address = DeviceManager.getInstance()?.deviceAddress
+        val isConnected = BleOperateManager.getInstance()?.isConnected == true
+
+        val deviceName = if (!address.isNullOrEmpty()) {
+            // Lấy tên thiết bị đã lưu qua BLE
+            val name = try {
+                val adapter = BluetoothAdapter.getDefaultAdapter()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) !=
+                    PackageManager.PERMISSION_GRANTED
+                ) null
+                else adapter?.getRemoteDevice(address)?.name
+            } catch (_: Exception) { null }
+            name ?: address
+        } else "Chưa kết nối"
+
+        binding.tvDeviceName.text = deviceName
+        updateConnectionStatus(connected = isConnected)
+    }
+
+    /**
+     * Cập nhật trạng thái kết nối + màu dot trên card
+     * connecting = true → hiện "Đang kết nối…" (chờ)
+     */
+    fun updateConnectionStatus(connected: Boolean = false, connecting: Boolean = false) {
+        runOnUiThread {
+            when {
+                connecting -> {
+                    binding.tvConnectionStatus.text = "Đang kết nối…"
+                    binding.tvConnectionStatus.setTextColor(0xFFFFA726.toInt()) // amber
+                    binding.viewStatusDot.setBackgroundResource(0) // clear
+                    binding.viewStatusDot.setBackgroundColor(0xFFFFA726.toInt())
+                }
+                connected -> {
+                    binding.tvConnectionStatus.text = "Đã kết nối"
+                    binding.tvConnectionStatus.setTextColor(0xFF00C853.toInt()) // green
+                    binding.viewStatusDot.setBackgroundResource(R.drawable.ic_status_dot_connected)
+                }
+                else -> {
+                    binding.tvConnectionStatus.text = "Không kết nối"
+                    binding.tvConnectionStatus.setTextColor(0xFF8BAED4.toInt()) // muted blue
+                    binding.viewStatusDot.setBackgroundResource(R.drawable.ic_status_dot_disconnected)
+                }
+            }
+        }
+    }
+    /**
+     * Cập nhật thanh pin — gọi từ DeviceNotifyListener khi nhận 0x05
+     * @param pct 0–100
+     */
+    private fun updateBattery(pct: Int) {
+        runOnUiThread {
+            binding.tvBatteryPct.text = "$pct%"
+            // Chiều rộng thanh fill = tỉ lệ của parent (80dp)
+            val parent = binding.viewBatteryFill.parent as FrameLayout
+            val totalW = parent.width
+            if (totalW > 0) {
+                val lp = binding.viewBatteryFill.layoutParams
+                lp.width = (totalW * pct / 100).coerceIn(0, totalW)
+                binding.viewBatteryFill.layoutParams = lp
+            }
+            // Màu theo mức pin
+            val color = when {
+                pct > 50 -> 0xFF00C853.toInt()  // xanh lá
+                pct > 20 -> 0xFFFFA726.toInt()  // cam
+                else     -> 0xFFE53935.toInt()  // đỏ
+            }
+            binding.viewBatteryFill.setBackgroundColor(color)
+            // Emoji icon
+            binding.tvBatteryIcon.text = when {
+                pct > 80 -> "🔋"
+                pct > 50 -> "🔋"
+                pct > 20 -> "🪫"
+                else     -> "🪫"
+            }
+            appendLog("🔋 Pin kính: $pct%")
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────
     // NÚT KÍNH — xử lý button events từ GlassesDeviceNotifyRsp
     //
@@ -496,7 +411,19 @@ class MainActivity : AppCompatActivity() {
 
                 // ── Pin ───────────────────────────────────────────
                 0x05 -> runOnUiThread {
+                    updateBattery(d[7].toInt() and 0xFF)
                     appendLog("🔋 Pin kính: ${d[7].toInt() and 0xFF}%")
+                }
+                0x06 -> runOnUiThread {
+                    refreshDeviceCard()
+                    updateConnectionStatus(connected = true)
+                    appendLog("✅ Kính đã kết nối")
+                }
+                // BLE disconnected event
+                0x07 -> runOnUiThread {
+                    updateConnectionStatus(connected = false)
+                    binding.tvBatteryPct.text = "–"
+                    appendLog("⚠️ Kính đã ngắt kết nối")
                 }
 
                 // ── Pause/broadcast ───────────────────────────────
@@ -506,20 +433,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    /*inner class DeviceNotifyListener : GlassesDeviceNotifyListener() {
-        override fun parseData(cmdType: Int, response: GlassesDeviceNotifyRsp) {
-            if (response.loadData.size <= 7) return
-
-            when (response.loadData[6].toInt()) {
-                0x03 -> if (response.loadData[7].toInt() == 1) {
-                    appendLog("Glasses microphone activated")
-                    Log.d("COnnectMicrophone","Glasses microphone activated")
-                }
-                0x05 -> appendLog("Battery: ${response.loadData[7].toInt()}%")
-                0x0c -> appendLog("Glasses pause/broadcast event")
-            }
-        }
-    }*/
     // ─────────────────────────────────────────────────────────────
     // NÚT PHẢI logic:
     //   1 click  → Chụp ảnh
@@ -665,28 +578,23 @@ class MainActivity : AppCompatActivity() {
             .permission(permissions)
             .request(object : PermissionCallback() {})
     }
-
-    private fun ensureBluetoothEnabled() {
-        ensureLocationEnabled()
-        try {
-            if (!BluetoothUtils.isEnabledBluetooth(this)) {
-                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) !=
-                    PackageManager.PERMISSION_GRANTED
-                ) {
-                    return
-                }
-                startActivityForResult(intent, 300)
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Cannot request Bluetooth enable", e)
+private fun ensureBluetoothEnabled() {
+    ensureLocationEnabled()
+    try {
+        if (!BluetoothUtils.isEnabledBluetooth(this)) {
+            val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) !=
+                PackageManager.PERMISSION_GRANTED
+            ) return
+            @Suppress("DEPRECATION")
+            startActivityForResult(intent, 300)
         }
-
-        if (!hasBluetooth(this)) {
-            requestBluetoothPermission(this, object : PermissionCallback() {})
-        }
+    } catch (e: Exception) {
+        Log.w(TAG, "Cannot request Bluetooth enable", e)
     }
+    if (!hasBluetooth(this)) requestBluetoothPermission(this, object : PermissionCallback() {})
+}
 
     private fun ensureLocationEnabled(): Boolean {
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
@@ -694,11 +602,12 @@ class MainActivity : AppCompatActivity() {
             locationManager.isLocationEnabled
         } else {
             @Suppress("DEPRECATION")
-            Settings.Secure.getInt(contentResolver, Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF) !=
-                Settings.Secure.LOCATION_MODE_OFF
+            Settings.Secure.getInt(
+                contentResolver, Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF
+            ) != Settings.Secure.LOCATION_MODE_OFF
         }
         if (!enabled) {
-            appendLog("Location is off. Turn on Location for Bluetooth glasses discovery/control.")
+            appendLog("⚠️ Cần bật Location để kết nối kính BLE")
             startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
         }
         return enabled

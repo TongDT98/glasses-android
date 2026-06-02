@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F0F4F8"
     android:fillViewport="true"
     tools:ignore="MissingClass">
 
@@ -10,99 +11,202 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
-        <!-- ── HEADER ─────────────────────────────────────────────── -->
-        <TextView
+        <!-- ╔══════════════════════════════════════════════════════╗ -->
+        <!-- ║          DEVICE STATUS CARD                         ║ -->
+        <!-- ╚══════════════════════════════════════════════════════╝ -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/voice_agent_title"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:layout_marginBottom="4dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
 
+            <!-- Dark gradient background -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_device_card"
+                android:orientation="horizontal"
+                android:padding="20dp"
+                android:gravity="center_vertical">
+
+                <!-- LEFT: device info -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Device name -->
+                    <TextView
+                        android:id="@+id/tv_device_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chưa kết nối"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02" />
+
+                    <!-- Connection status badge -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_status_badge"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp">
+
+                        <!-- Status dot -->
+                        <View
+                            android:id="@+id/view_status_dot"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:background="@drawable/ic_status_dot_disconnected"
+                            android:layout_marginEnd="6dp" />
+
+                        <TextView
+                            android:id="@+id/tv_connection_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Không kết nối"
+                            android:textColor="#8BAED4"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- Battery row -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <!-- Battery icon -->
+                        <TextView
+                            android:id="@+id/tv_battery_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔋"
+                            android:textSize="14sp"
+                            android:layout_marginEnd="6dp" />
+
+                        <!-- Battery bar background -->
+                        <FrameLayout
+                            android:layout_width="80dp"
+                            android:layout_height="12dp"
+                            android:layout_marginEnd="8dp">
+
+                            <!-- Track -->
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#1A3060" />
+
+                            <!-- Fill -->
+                            <View
+                                android:id="@+id/view_battery_fill"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:background="#00C853" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/tv_battery_pct"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="–"
+                            android:textColor="#8BAED4"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- Action row: Scan / Reconnect / Disconnect -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btn_scan"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="Scan"
+                            android:textSize="11sp"
+                            android:textColor="#4A9EFF"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp" />
+
+                        <Button
+                            android:id="@+id/btn_connect"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="8dp"
+                            android:text="Kết nối"
+                            android:textSize="11sp"
+                            android:textColor="#4A9EFF"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp" />
+
+                        <Button
+                            android:id="@+id/btn_disconnect"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="8dp"
+                            android:text="Ngắt"
+                            android:textSize="11sp"
+                            android:textColor="#FF6B6B"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- RIGHT: glasses illustration -->
+                <ImageView
+                    android:layout_width="110dp"
+                    android:layout_height="80dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_glasses_device"
+                    android:scaleType="fitCenter"
+                    android:alpha="0.92"
+                    android:contentDescription="Smart glasses" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ── VOICE AGENT ──────────────────────────────────────── -->
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/voice_agent_subtitle"
-            android:textColor="#666666"
-            android:textSize="14sp" />
-
-        <EditText
-            android:id="@+id/websocket_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:hint="@string/websocket_url_hint"
-            android:inputType="textUri"
-            android:singleLine="true" />
-
-        <!-- ── BLUETOOTH CONTROLS ─────────────────────────────────── -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/section_bluetooth"
-            android:textColor="#333333"
-            android:textSize="13sp"
+            android:layout_marginBottom="8dp"
+            android:text="VOICE AGENT"
+            android:textColor="#7090B0"
+            android:textSize="11sp"
             android:textStyle="bold"
-            android:textAllCaps="true"
-            android:letterSpacing="0.08" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="10dp"
-            android:background="#E0E0E0" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_scan"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/action_scan" />
-
-            <Button
-                android:id="@+id/btn_connect"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="@string/action_reconnect" />
-
-            <Button
-                android:id="@+id/btn_disconnect"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="@string/action_disconnect" />
-        </LinearLayout>
-
-        <!-- ── VOICE AGENT CONTROLS ───────────────────────────────── -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/section_voice_agent"
-            android:textColor="#333333"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:textAllCaps="true"
-            android:letterSpacing="0.08" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="10dp"
-            android:background="#E0E0E0" />
+            android:letterSpacing="0.12" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -114,7 +218,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/action_start_voice" />
+                android:backgroundTint="#1976D2"
+                android:text="▶ Bắt đầu"
+                android:textColor="#FFFFFF" />
 
             <Button
                 android:id="@+id/btn_stop_voice"
@@ -122,39 +228,50 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="@string/action_stop_voice" />
+                android:backgroundTint="#455A64"
+                android:text="⏹ Dừng"
+                android:textColor="#FFFFFF" />
+
+            <!--<Button
+                android:id="@+id/btn_test_speaker"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="#37474F"
+                android:text="🔊 Test"
+                android:textColor="#FFFFFF" />-->
         </LinearLayout>
 
+        <!-- Hidden websocket_url — vẫn giữ id để MainActivity không crash -->
+        <EditText
+            android:id="@+id/websocket_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:inputType="textUri"
+            android:singleLine="true" />
 
-
-        <!-- ═══════════════════════════════════════════════════════════
-             MEDIA CONTROLS  (Camera + Audio recording + Sync)
-             ═══════════════════════════════════════════════════════════ -->
+        <!-- ── MEDIA CONTROLS ───────────────────────────────────── -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/section_media"
-            android:textColor="#333333"
-            android:textSize="13sp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"
+            android:text="MEDIA"
+            android:textColor="#7090B0"
+            android:textSize="11sp"
             android:textStyle="bold"
-            android:textAllCaps="true"
-            android:letterSpacing="0.08" />
+            android:letterSpacing="0.12" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="10dp"
-            android:background="#E0E0E0" />
-
-        <!-- Row 1: Photo · Video · Audio -->
+        <!-- 3 media buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center">
 
-            <!-- TAKE PHOTO -->
+            <!-- Photo -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -166,23 +283,24 @@
                     android:id="@+id/btn_take_photo"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:backgroundTint="#1976D2"
-                    android:text="@string/icon_camera"
-                    android:textSize="24sp"
-                    android:textColor="#FFFFFF"
-                    android:padding="0dp" />
+                    android:backgroundTint="#1565C0"
+                    android:text="📷"
+                    android:textSize="22sp"
+                    android:padding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/action_take_photo"
-                    android:textSize="12sp"
-                    android:textColor="#444444"
+                    android:layout_marginTop="5dp"
+                    android:text="Chụp ảnh"
+                    android:textSize="11sp"
+                    android:textColor="#546E7A"
                     android:gravity="center" />
             </LinearLayout>
 
-            <!-- VIDEO RECORD toggle -->
+            <!-- Video -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -194,24 +312,25 @@
                     android:id="@+id/btn_toggle_video"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:backgroundTint="#D32F2F"
-                    android:text="@string/icon_video"
-                    android:textSize="24sp"
-                    android:textColor="#FFFFFF"
-                    android:padding="0dp" />
+                    android:backgroundTint="#C62828"
+                    android:text="🎥"
+                    android:textSize="22sp"
+                    android:padding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
                 <TextView
                     android:id="@+id/tv_video_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/action_start_video"
-                    android:textSize="12sp"
-                    android:textColor="#444444"
+                    android:layout_marginTop="5dp"
+                    android:text="Quay video"
+                    android:textSize="11sp"
+                    android:textColor="#546E7A"
                     android:gravity="center" />
             </LinearLayout>
 
-            <!-- AUDIO RECORD toggle -->
+            <!-- Audio -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -223,36 +342,36 @@
                     android:id="@+id/btn_toggle_audio"
                     android:layout_width="64dp"
                     android:layout_height="64dp"
-                    android:backgroundTint="#388E3C"
-                    android:text="@string/icon_mic"
-                    android:textSize="24sp"
-                    android:textColor="#FFFFFF"
-                    android:padding="0dp" />
+                    android:backgroundTint="#2E7D32"
+                    android:text="🎙"
+                    android:textSize="22sp"
+                    android:padding="0dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp" />
 
                 <TextView
                     android:id="@+id/tv_audio_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/action_start_audio"
-                    android:textSize="12sp"
-                    android:textColor="#444444"
+                    android:layout_marginTop="5dp"
+                    android:text="Ghi âm"
+                    android:textSize="11sp"
+                    android:textColor="#546E7A"
                     android:gravity="center" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Row 2: Unsynced badge + Sync button -->
+        <!-- Sync row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="14dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <!-- Unsynced count chip -->
             <TextView
                 android:id="@+id/tv_unsynced_count"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_chip"
@@ -260,58 +379,52 @@
                 android:paddingEnd="12dp"
                 android:paddingTop="6dp"
                 android:paddingBottom="6dp"
-                android:text="@string/unsynced_none"
-                android:textSize="13sp"
-                android:textColor="#333333" />
+                android:text="Không có file chờ đồng bộ"
+                android:textSize="12sp"
+                android:textColor="#455A64" />
 
-            <!-- CHECK button -->
             <Button
                 android:id="@+id/btn_check_media"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="6dp"
                 android:backgroundTint="#607D8B"
-                android:text="@string/action_check_media"
+                android:text="Kiểm tra"
                 android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:textSize="12sp" />
 
-            <!-- SYNC button -->
             <Button
                 android:id="@+id/btn_sync_media"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:backgroundTint="#F57C00"
-                android:text="@string/action_sync_media"
+                android:layout_marginStart="6dp"
+                android:backgroundTint="#E65100"
+                android:text="Đồng bộ"
                 android:textColor="#FFFFFF"
-                android:textSize="13sp" />
+                android:textSize="12sp" />
 
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-        <Button
-            android:id="@+id/btn_open_gallery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:backgroundTint="#5C6BC0"
-            android:text="📂 File phương tiện"
-            android:textColor="#FFFFFF"
-            android:textSize="13sp" />
-
-
+            <Button
+                android:id="@+id/btn_open_gallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:backgroundTint="#4527A0"
+                android:text="📂"
+                android:textSize="16sp"
+                android:textColor="#FFFFFF"
+                android:padding="8dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
         </LinearLayout>
 
-        <!-- Sync progress bar (hidden until sync starts) -->
+        <!-- Sync progress (hidden) -->
         <LinearLayout
             android:id="@+id/layout_sync_progress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -319,9 +432,9 @@
                 android:id="@+id/tv_sync_progress_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/sync_in_progress"
+                android:text="Đang đồng bộ…"
                 android:textSize="12sp"
-                android:textColor="#555555" />
+                android:textColor="#607D8B" />
 
             <ProgressBar
                 android:id="@+id/progress_sync"
@@ -333,20 +446,30 @@
                 android:progress="0" />
         </LinearLayout>
 
-        <!-- ── STATUS LOG ─────────────────────────────────────────── -->
+        <!-- ── STATUS LOG ───────────────────────────────────────── -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="6dp"
+            android:text="LOG"
+            android:textColor="#7090B0"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.12" />
+
         <TextView
             android:id="@+id/status_log"
             android:layout_width="match_parent"
-            android:layout_height="320dp"
-            android:layout_marginTop="20dp"
-            android:background="#111111"
+            android:layout_height="240dp"
+            android:background="#111827"
             android:fontFamily="monospace"
             android:gravity="bottom"
             android:padding="12dp"
             android:scrollbars="vertical"
-            android:text="@string/log_initial"
-            android:textColor="#EAEAEA"
-            android:textSize="12sp" />
+            android:text="Ready."
+            android:textColor="#94A3B8"
+            android:textSize="11sp" />
 
     </LinearLayout>
 </ScrollView>
