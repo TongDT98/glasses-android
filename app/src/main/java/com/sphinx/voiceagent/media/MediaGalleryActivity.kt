@@ -57,10 +57,13 @@ class MediaGalleryActivity : AppCompatActivity() {
     private lateinit var tvStoragePath: TextView
     private lateinit var tvStats: TextView
     private lateinit var btnDeleteAll: Button
+    private lateinit var btnDeleteSelected: Button
+    private lateinit var btnCancelSelection: Button
     private lateinit var spinnerFilter: Spinner
 
     private val allFiles     = mutableListOf<MediaFile>()
     private val displayFiles = mutableListOf<MediaFile>()
+    private val selectedFiles = linkedSetOf<MediaFile>()
     private lateinit var adapter: MediaAdapter
     private var mediaPlayer: MediaPlayer? = null
 
@@ -73,7 +76,13 @@ class MediaGalleryActivity : AppCompatActivity() {
             title = "Media từ kính"
             setDisplayHomeAsUpEnabled(true)
         }
-        adapter = MediaAdapter(displayFiles, ::onItemClick, ::onItemLongClick)
+        adapter = MediaAdapter(
+            displayFiles,
+            ::onItemClick,
+            ::onItemLongClick,
+            isSelectionMode = { selectedFiles.isNotEmpty() },
+            isSelected = { selectedFiles.contains(it) }
+        )
         recyclerView.layoutManager = GridLayoutManager(this, 2)
         recyclerView.adapter = adapter
         setupFilter()
@@ -172,6 +181,7 @@ class MediaGalleryActivity : AppCompatActivity() {
     } catch (_: Exception) { false }
 
     private fun applyFilter(idx: Int) {
+        selectedFiles.removeAll { selected -> allFiles.none { it.file == selected.file } }
         displayFiles.clear()
         displayFiles.addAll(when (idx) {
             1    -> allFiles.filter { it.type == MediaType.IMAGE }
@@ -198,12 +208,33 @@ class MediaGalleryActivity : AppCompatActivity() {
         }
         tvStoragePath.text = "📁 ${albumDir.absolutePath}"
         btnDeleteAll.isEnabled = allFiles.isNotEmpty()
+        btnDeleteAll.visibility = if (selectedFiles.isEmpty()) View.VISIBLE else View.GONE
+        btnDeleteSelected.visibility = if (selectedFiles.isEmpty()) View.GONE else View.VISIBLE
+        btnCancelSelection.visibility = if (selectedFiles.isEmpty()) View.GONE else View.VISIBLE
+        btnDeleteSelected.text = "Đã chọn (${selectedFiles.size})"
     }
 
     // ─────────────────────────────────────────────────────────────
     // Item interactions
     // ─────────────────────────────────────────────────────────────
+//    private fun onItemClick(media: MediaFile) {
+//        if (selectedFiles.isNotEmpty()) {
+//            toggleSelection(media)
+//            return
+//        }
+//        when (media.type) {
+//            MediaType.AUDIO -> showAudioPlayer(media)
+//            else            -> openWithSystem(media)
+//        }
+//    }
     private fun onItemClick(media: MediaFile) {
+        // Nếu ĐANG trong chế độ chọn nhiều file -> Click vào item sẽ TỰ ĐỘNG check/uncheck
+        if (selectedFiles.isNotEmpty()) {
+            toggleSelection(media)
+            return
+        }
+
+        // Nếu KHÔNG trong chế độ chọn -> Click để xem/nghe bình thường
         when (media.type) {
             MediaType.AUDIO -> showAudioPlayer(media)
             else            -> openWithSystem(media)
@@ -313,6 +344,9 @@ class MediaGalleryActivity : AppCompatActivity() {
     private fun formatMs(ms: Int) = "%d:%02d".format(ms / 60000, ms / 1000 % 60)
 
     private fun onItemLongClick(media: MediaFile) {
+        toggleSelection(media)
+        Toast.makeText(this, "Da chon ${media.name}", Toast.LENGTH_SHORT).show()
+        return
         AlertDialog.Builder(this)
             .setTitle(media.name)
             .setMessage("${media.sizeLabel}  ·  ${media.dateLabel}")
@@ -345,6 +379,44 @@ class MediaGalleryActivity : AppCompatActivity() {
                 Toast.makeText(this, "Đã xoá $n file", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Huỷ", null).show()
+    }
+
+    private fun deleteSelected() {
+        val files = selectedFiles.toList()
+        if (files.isEmpty()) return
+        AlertDialog.Builder(this)
+            .setTitle("Xóa mục đã chọn ?")
+            .setMessage("Xoa ${files.size} file. không thể khôi phục.")
+            .setPositiveButton("Xóa") { _, _ ->
+                var n = 0
+                files.forEach { media ->
+                    media.thumbnailPath?.let { File(it).delete() }
+                    if (media.ext == "pcm") File(media.file.parent, "${media.file.nameWithoutExtension}.wav").delete()
+                    if (media.file.delete()) {
+                        allFiles.remove(media)
+                        displayFiles.remove(media)
+                        n++
+                    }
+                }
+                selectedFiles.clear()
+                adapter.notifyDataSetChanged()
+                updateUI()
+                Toast.makeText(this, "Đã xóa $n file", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Huy", null)
+            .show()
+    }
+
+    private fun toggleSelection(media: MediaFile) {
+        if (!selectedFiles.add(media)) selectedFiles.remove(media)
+        adapter.notifyDataSetChanged()
+        updateUI()
+    }
+
+    private fun clearSelection() {
+        selectedFiles.clear()
+        adapter.notifyDataSetChanged()
+        updateUI()
     }
 
     private fun shareFile(media: MediaFile) {
@@ -397,6 +469,20 @@ class MediaGalleryActivity : AppCompatActivity() {
                     layoutParams = LinearLayout.LayoutParams(-2, -2).apply { marginStart = 8.dp() }
                     setOnClickListener { deleteAll() }
                 }.also { addView(it) }
+
+                btnDeleteSelected = Button(context).apply {
+                    text = "Xoa da chon"; textSize = 12f
+                    visibility = View.GONE
+                    layoutParams = LinearLayout.LayoutParams(-2, -2).apply { marginStart = 8.dp() }
+                    setOnClickListener { deleteSelected() }
+                }.also { addView(it) }
+
+                btnCancelSelection = Button(context).apply {
+                    text = "Huy"; textSize = 12f
+                    visibility = View.GONE
+                    layoutParams = LinearLayout.LayoutParams(-2, -2).apply { marginStart = 8.dp() }
+                    setOnClickListener { clearSelection() }
+                }.also { addView(it) }
             })
 
             addView(View(context).apply {
@@ -426,14 +512,17 @@ class MediaAdapter(
     private val items: List<MediaFile>,
     private val onClick: (MediaFile) -> Unit,
     private val onLongClick: (MediaFile) -> Unit,
+    private val isSelectionMode: () -> Boolean,
+    private val isSelected: (MediaFile) -> Boolean,
 ) : RecyclerView.Adapter<MediaAdapter.VH>() {
 
     inner class VH(val root: LinearLayout) : RecyclerView.ViewHolder(root) {
         val iv    = root.getChildAt(0) as ImageView
         val icon  = root.getChildAt(1) as TextView
         val badge = root.getChildAt(2) as TextView
-        val name  = root.getChildAt(3) as TextView
-        val meta  = root.getChildAt(4) as TextView
+        val check = root.getChildAt(3) as TextView
+        val name  = root.getChildAt(4) as TextView
+        val meta  = root.getChildAt(5) as TextView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, vt: Int): VH {
@@ -457,6 +546,11 @@ class MediaAdapter(
                 layoutParams = LinearLayout.LayoutParams(-2,-2)
                 visibility = View.GONE })
             addView(TextView(context).apply {
+                textSize = 18f; gravity = Gravity.CENTER
+                setTextColor(0xFF1565C0.toInt())
+                layoutParams = LinearLayout.LayoutParams(-1,-2)
+                visibility = View.GONE })
+            addView(TextView(context).apply {
                 textSize = 11f; setTextColor(0xFF222222.toInt()); gravity = Gravity.CENTER; maxLines = 2
                 layoutParams = LinearLayout.LayoutParams(-1,-2).apply { topMargin = 6.dp() } })
             addView(TextView(context).apply {
@@ -470,6 +564,10 @@ class MediaAdapter(
         h.name.text  = m.name
         h.meta.text  = "${m.sizeLabel}  ·  ${m.dateLabel}"
         h.badge.visibility = View.GONE
+        val selected = isSelected(m)
+        h.root.setBackgroundColor(if (selected) 0xFFE3F2FD.toInt() else 0xFFF5F5F5.toInt())
+        h.check.visibility = if (isSelectionMode()) View.VISIBLE else View.GONE
+        h.check.text = if (selected) "☑" else "☐"
 
         when (m.type) {
             MediaType.IMAGE -> {
