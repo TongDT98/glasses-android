@@ -332,6 +332,7 @@ class MainActivity : AppCompatActivity() {
                     binding.tvConnectionStatus.text = "Không kết nối"
                     binding.tvConnectionStatus.setTextColor(0xFF8BAED4.toInt()) // muted blue
                     binding.viewStatusDot.setBackgroundResource(R.drawable.ic_status_dot_disconnected)
+                    updateBattery(0)
                 }
             }
         }
