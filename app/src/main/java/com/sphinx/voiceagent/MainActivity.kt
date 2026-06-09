@@ -40,6 +40,13 @@ import com.sphinx.voiceagent.voice.VoiceAgentConfig
 import com.sphinx.voiceagent.voice.VoiceChatController
 import com.sphinx.voiceagent.voice.VoiceChatEvent
 import com.sphinx.voiceagent.media.MediaGalleryActivity
+import android.widget.ArrayAdapter
+import android.widget.AdapterView
+import androidx.lifecycle.lifecycleScope
+import com.sphinx.voiceagent.data.model.agent.response.CollectionResponse
+import com.sphinx.voiceagent.data.repository.AgentRepository
+import kotlinx.coroutines.launch
+import com.sphinx.voiceagent.voice.VoiceSettingsActivity
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var voiceChatController: VoiceChatController
@@ -55,6 +62,10 @@ class MainActivity : AppCompatActivity() {
             override fun parseData(cmdType: Int, response: GlassModelControlResponse) =
                 block(cmdType, response)
         }
+    private  val agentRepo = AgentRepository()
+    private var voiceCollections: List<CollectionResponse> = emptyList()
+    private var currentCollectionId: String? = null
+    private var selectedCollectionId: String? = null
     private val DOUBLE_CLICK_MS = 400L
 
     // Nút trái
@@ -77,6 +88,7 @@ class MainActivity : AppCompatActivity() {
         syncManager = SyncManager(MyApplication.getInstance())
         initGlassesSdk()
         bindViews()
+        loadVoiceSelector()
         requestRuntimePermissions()
     }
 
@@ -197,6 +209,10 @@ class MainActivity : AppCompatActivity() {
             setGlassesVoiceCapture(start = false)
             voiceChatController.stop()
         }
+        binding.btnApplyVoice.setOnClickListener { applySelectedVoice() }
+//        binding.btnVoiceSettings.setOnClickListener {
+//            startActivity(Intent(this, VoiceSettingsActivity::class.java))
+//        }
 
         // ── Media Controls ─────────────────────────────────────────
 
@@ -252,6 +268,81 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, MediaGalleryActivity::class.java))
         }
 
+    }
+    private fun loadVoiceSelector() {
+        binding.progressVoiceSelector.visibility = View.VISIBLE
+        binding.spinnerVoice.isEnabled = false
+        Log.d("VoiceAgent:","Check agent")
+        lifecycleScope.launch {
+            try {
+                // Gọi song song: agent detail + collections
+                val agentDeferred =  agentRepo.getAgent()
+                Log.d("VoiceAgent","${agentDeferred.tts_collection_id}")
+                val collsDeferred = agentRepo.getCollections()
+
+                val agent  = agentDeferred
+                val colls  = collsDeferred
+
+                currentCollectionId  = agent.tts_collection_id
+                selectedCollectionId = currentCollectionId
+                voiceCollections     = colls
+
+                // Bind spinner
+                val names = colls.map { it.name }
+                val adapter = ArrayAdapter(
+                    this@MainActivity,
+                    android.R.layout.simple_spinner_item,
+                    names
+                ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+
+                binding.spinnerVoice.adapter = adapter
+
+                // Chọn sẵn giọng đang dùng
+                val selectedIndex = colls.indexOfFirst { it.id == currentCollectionId }
+                if (selectedIndex >= 0) binding.spinnerVoice.setSelection(selectedIndex)
+
+                binding.spinnerVoice.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                        selectedCollectionId = voiceCollections.getOrNull(pos)?.id
+                        // Chỉ enable nút Áp dụng khi chọn giọng khác với giọng hiện tại
+                        binding.btnApplyVoice.isEnabled = selectedCollectionId != currentCollectionId
+                    }
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+
+                binding.spinnerVoice.isEnabled = true
+                binding.progressVoiceSelector.visibility = View.GONE
+
+            } catch (e: Exception) {
+                binding.progressVoiceSelector.visibility = View.GONE
+                appendLog("⚠️ Không tải được danh sách giọng: ${e.message}")
+            }
+        }
+    }
+    /**
+     * Áp dụng giọng đã chọn qua PATCH /agents.
+     * Gọi từ binding.btnApplyVoice.setOnClickListener.
+     */
+    private fun applySelectedVoice() {
+        val colId = selectedCollectionId ?: return
+        binding.btnApplyVoice.isEnabled = false
+        binding.btnApplyVoice.text = "Đang lưu…"
+
+        lifecycleScope.launch {
+            try {
+                agentRepo.updateVoice(colId)
+                currentCollectionId = colId
+                val name = voiceCollections.find { it.id == colId }?.name ?: colId
+                appendLog("✅ Giọng nói đã đổi sang: $name")
+                binding.btnApplyVoice.text = "Áp dụng"
+                // Disable vì không còn thay đổi nào pending
+                binding.btnApplyVoice.isEnabled = false
+            } catch (e: Exception) {
+                appendLog("❌ Đổi giọng thất bại: ${e.message}")
+                binding.btnApplyVoice.text = "Áp dụng"
+                binding.btnApplyVoice.isEnabled = true
+            }
+        }
     }
     // ─────────────────────────────────────────────────────────────
     // CHỤP ẢNH — có debounce chống spam

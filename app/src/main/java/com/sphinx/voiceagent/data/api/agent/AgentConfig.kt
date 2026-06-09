@@ -2,14 +2,14 @@ package com.sphinx.voiceagent.data.api.agent
 
 object  AgentConfig {
     const val BASE_URL =
-        "https://api-console.svisor.vn/"
+        "https://agent.svisor.vn/"
 
     const val EMAIL =
-        "your_email"
+        "hieudm@sphinxjsc.com"
 
     const val PASSWORD =
-        "your_password"
+        "hieudm@sphinxjsc.com"
 
     const val AGENT_ID =
-        "your_agent_id"
+        "accb819b-016c-4500-8701-3f1d70c1a8ab"
 }
